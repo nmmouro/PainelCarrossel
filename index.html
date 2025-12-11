@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Painel da Frota - TV Fullscreen</title>
+<meta http-equiv="refresh" content="3600">
+<style>
+    body {
+        margin: 0;
+        background: #111;
+        color: white;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    header {
+        text-align: center;
+        padding: 15px;
+        background: #000;
+        border-bottom: 3px solid #444;
+    }
+
+    header img {
+        height: 70px;
+    }
+
+    .tela {
+        width: 100vw;
+        height: calc(100vh - 120px);
+        position: absolute;
+        top: 120px;
+        left: 0;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        padding: 20px;
+    }
+
+    .ativa {
+        opacity: 1;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 15px;
+        font-size: 40px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 26px;
+    }
+
+    th {
+        background: #333;
+        padding: 10px;
+        font-size: 28px;
+        border-bottom: 2px solid #777;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #444;
+    }
+
+    .cancelado {
+        background: rgba(255, 0, 0, 0.3);
+        animation: piscar 1s infinite;
+    }
+
+    @keyframes piscar {
+        0% { background: rgba(255, 0, 0, 0.6); }
+        50% { background: rgba(255, 0, 0, 0.2); }
+        100% { background: rgba(255, 0, 0, 0.6); }
+    }
+
+    .status-andamento { background: rgba(255,140,0,0.4); }
+    .status-concluido { background: rgba(0,180,0,0.4); }
+</style>
+</head>
+<body>
+
+<header>
+    <img src="logo.png">
+</header>
+
+<div id="painel" class="tela ativa"></div>
+<div id="agenda" class="tela"></div>
+<div id="social" class="tela"></div>
+
+<script>
+const SHEET_ID = "14T7zF0likp8YGeycOYBcOs9INY9gvMzpt7SMfghE8P4";
+
+// ✨ função para converter Date(2025,11,10) → 10/12/2025
+function parseDate(value) {
+    if (!value || typeof value !== "string") return value;
+
+    if (value.startsWith("Date(")) {
+        const m = value.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+))?/);
+        if (!m) return value;
+
+        const ano = +m[1];
+        const mes = +m[2] + 1;
+        const dia = +m[3];
+
+        const hora = m[4] ? String(m[4]).padStart(2, "0") : "";
+        const minuto = m[5] ? String(m[5]).padStart(2, "0") : "";
+
+        if (hora) return `${hora}:${minuto}`;
+        return `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}/${ano}`;
+    }
+
+    return value;
+}
+
+// ✨ Função que carrega uma aba da planilha
+async function loadSheet(sheetName) {
+    const url =
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}&nocache=` +
+      Math.random();
+
+    const raw = await fetch(url).then(r => r.text());
+    const clean = raw.replace("/*O_o*/", "").replace(/[\n\r]/g, "");
+    const json = JSON.parse(clean.substring(47, clean.length - 2));
+
+    const cols = json.table.cols.map(c => c.label);
+    const rows = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
+
+    return { cols, rows };
+}
+
+// ✨ Renderização de tabelas com destaque de status
+function renderTable(elementId, title, cols, rows) {
+    let html = `<h1>${title}</h1><table><tr>`;
+
+    cols.forEach(c => html += `<th>${c}</th>`);
+    html += "</tr>";
+
+    rows.forEach(r => {
+
+        // Converte datas e horas
+        const formatted = r.map(parseDate);
+
+        // DETECTA STATUS
+        let cls = "";
+        const status = formatted[formatted.length - 1].toString().toLowerCase();
+
+        if (status.includes("cancel")) cls = "cancelado";
+        else if (status.includes("andamento")) cls = "status-andamento";
+        else if (status.includes("conclu")) cls = "status-concluido";
+
+        html += `<tr class="${cls}">`;
+        formatted.forEach(v => html += `<td>${v}</td>`);
+        html += "</tr>";
+    });
+
+    html += "</table>";
+
+    document.getElementById(elementId).innerHTML = html;
+}
+
+// ✨ Carregar tudo
+async function atualizar() {
+    // PAINEL
+    const p = await loadSheet("PAINEL");
+    renderTable("painel", "Movimentação - Diário de Bordo", p.cols, p.rows);
+
+    // AGENDA DO DIA (HORA corrigida)
+    const a = await loadSheet("AGENDA DO DIA");
+    renderTable("agenda", "Agenda do Dia", a.cols, a.rows);
+
+    // SERVIÇO SOCIAL
+    const s = await loadSheet("AGENDA SERVIÇO SOCIAL");
+    renderTable("social", "Agenda Serviço Social", s.cols, s.rows);
+}
+
+// Carrega agora e atualiza a cada 60s
+atualizar();
+setInterval(atualizar, 60000);
+
+// ✨ Carrossel automático
+let tela = 0;
+setInterval(() => {
+    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+    ["painel", "agenda", "social"][tela].classList.add("ativa");
+    tela = (tela + 1) % 3;
+}, 10000);
+</script>
+
+</body>
+</html>
