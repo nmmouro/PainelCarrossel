@@ -120,12 +120,14 @@ const TAB_AVISOS = "AVISOS";
 
 /* relógio */
 function updateClock(){
-  const n=new Date();
-  clock.textContent =
-    n.toLocaleDateString("pt-BR") + " — " +
-    n.toLocaleTimeString("pt-BR");
+  const now = new Date();
+  const optsDate = { day:"2-digit", month:"2-digit", year:"numeric" };
+  const optsTime = { hour:"2-digit", minute:"2-digit", second:"2-digit" };
+  document.getElementById("clock").textContent = now.toLocaleDateString("pt-BR",optsDate) + " — " + now.toLocaleTimeString("pt-BR",optsTime);
 }
-setInterval(updateClock,1000); updateClock();
+
+setInterval(updateClock,1000);
+  updateClock();
 
 /* helpers */
 function parseGviz(text){
@@ -195,7 +197,7 @@ async function loadAll(){
 
 loadAll();
 setInterval(loadAll,60000);
-setInterval(toggleCarousel,7000);
+setInterval(toggleCarousel,6000);
 </script>
 
 </body>
