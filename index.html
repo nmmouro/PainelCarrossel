@@ -130,7 +130,7 @@ setInterval(updateClock,1000);
   updateClock();
 
 /* helpers */
-function parseGviz(text){
+  function parseGviz(text){
   const i=text.indexOf("{");
   const j=text.lastIndexOf("}");
   return JSON.parse(text.slice(i,j+1));
@@ -189,7 +189,7 @@ async function loadAll(){
     loadSheet(TAB_AVISOS)
   ]);
 
-  renderTable("painel",p);
+  renderTable(containerId, sheetName, gvizJson)
   renderTable("agenda",a);
   renderTable("carousel-ss",ss);
   renderTable("carousel-avisos",av);
