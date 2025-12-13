@@ -17,6 +17,23 @@
   --muted:#f7f9fa;
 }
 
+  #carousel > div{width:100%;
+}
+  table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:14px;
+}
+  th,td{
+  text-align:left;
+  padding:6px;
+  border-bottom:1px solid rgba(255,255,255,.15);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
 html,body{
   margin:0;height:100%;
   background:var(--bg);
@@ -59,26 +76,17 @@ main{
   color:var(--accent);
 }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  table-layout:fixed;
-  font-size:14px;
-}
-
-th,td{
-  padding:6px;
-  border-bottom:1px solid rgba(255,255,255,.15);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
 th{
   background:#0435bf;
 }
+  /* carrossel */
+#carousel-content{min-height:120px
+}
+.fade{animation:fade .6s
+}
+@keyframes fade{from{opacity:.2}to{opacity:1}
+}
 
-#carousel > div{width:100%}
 </style>
 </head>
 
@@ -109,6 +117,8 @@ th{
     </div>
   </section>
 </main>
+
+  <div class="small">Atualização automática a cada 60s • Fonte: Google Sheets (GViz)</div>
 
 <script>
 const SHEET_ID = "1Ch3AjQ0MDo4WuQWFDR3r8nZrHb4yQkSLOtT5_QgxT6E";
@@ -166,19 +176,37 @@ function renderTable(id, data){
   document.getElementById(id).innerHTML=h;
 }
 
+  /* ================= LOAD SHEETS ================= */
+
 async function loadSheet(name){
   const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`);
   return parseGviz(await r.text());
 }
 
+  /* ================= CARROSSEL ================= */
+
 /* carrossel */
-let idx=0;
+let carouselIndex = 0;
+
 function toggleCarousel(){
-  carousel-ss.style.display = idx===0?"block":"none";
-  carousel-avisos.style.display = idx===1?"block":"none";
-  carousel-title.innerText = idx===0?TAB_SS:TAB_AVISOS;
-  idx=(idx+1)%2;
+  const title = document.getElementById("carousel-title");
+  const ss = document.getElementById("carousel-ss");
+  const avisos = document.getElementById("carousel-avisos");
+
+  if (carouselIndex === 0){
+    ss.style.display = "block";
+    avisos.style.display = "none";
+    title.innerText = "AGENDA SERVIÇO SOCIAL";
+  } else {
+    ss.style.display = "none";
+    avisos.style.display = "block";
+    title.innerText = "AVISOS";
+  }
+
+  carouselIndex = (carouselIndex + 1) % 2;
 }
+
+/* ================= MAIN ================= */
 
 /* main */
 async function loadAll(){
@@ -194,11 +222,15 @@ async function loadAll(){
   renderTable("carousel-ss",ss);
   renderTable("carousel-avisos",av);
 }
+  catch(e){
+    console.error(e);
+  }
+
 
 loadAll();
 setInterval(loadAll,60000);
 setInterval(toggleCarousel,6000);
-</script>
 
+</script>
 </body>
 </html>
