@@ -3,8 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-
 <title>Painel - Frota (GViz)</title>
+
+  <!-- evitar cache no GitHub Pages -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
 <style>
 :root{
@@ -14,7 +18,7 @@
 #carousel > div{
   width:100%;
 }
-
+  
 table{
   width:100%;
   table-layout:fixed;
@@ -30,6 +34,7 @@ th, td{
  
 html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Arial}
 header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#020617}
+header img{height:66px}
 header .title{font-size:20px;font-weight:700;color:var(--accent)}
 header .clock{font-size:18px;color:var(--muted)}
 
@@ -57,8 +62,7 @@ th{background:#0435bf}
 
 <body>
 <header>  
- <div class="logo.png" alt="Logo" class="logo"
- onerror="this.style.display='none'"> 
+ <img src="logo.png" alt="Logo (coloque logo.png na mesma pasta)" onerror="this.style.display='none'">
  <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
   <div class="clock" id="clock"></div>
 </header>
@@ -83,6 +87,9 @@ th{background:#0435bf}
     <div id="carousel-avisos" style="display:none"></div>
   </div>
 </section>
+</main>
+
+<div class="small">Atualização automática a cada 60s • Fonte: Google Sheets (GViz)</div>
 
 
 <script>
@@ -94,12 +101,14 @@ const TAB_SS = "AGENDA SERVIÇO SOCIAL";
 const TAB_AVISOS = "AVISOS";
 
 /* ================= CLOCK ================= */
-function clock(){
-  const d=new Date();
-  document.getElementById("clock").innerText =
-    d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR");
+function updateClock(){
+  const now = new Date();
+  const optsDate = { day:"2-digit", month:"2-digit", year:"numeric" };
+  const optsTime = { hour:"2-digit", minute:"2-digit", second:"2-digit" };
+  document.getElementById("clock").textContent = now.toLocaleDateString("pt-BR",optsDate) + " — " + now.toLocaleTimeString("pt-BR",optsTime);
 }
-setInterval(clock,1000); clock();
+setInterval(updateClock,1000);
+updateClock();
 
 /* ================= HELPERS ================= */
 function parseGViz(t){
@@ -187,3 +196,4 @@ setInterval(toggleCarousel, 7000);
 </script>
 </body>
 </html>
+<div class=
