@@ -1,40 +1,38 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Painel - Frota (GViz)</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel - Frota</title>
 
-  <!-- evitar cache no GitHub Pages -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 <style>
 :root{
-  --bg:#071029; --card:#2a71e8; --muted:#f7f9fa;
+  --bg:#071029;
+  --card:#2a71e8;
   --accent:#00eaff;
-}
-#carousel > div{
-  width:100%;
-}
-  
-table{
-  width:100%;
-  table-layout:fixed;
+  --muted:#f7f9fa;
 }
 
-th, td{
-  text-align:left;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+html,body{
+  margin:0;height:100%;
+  background:var(--bg);
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
 }
 
- 
-html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Arial}
-header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#020617}
-header img{height:66px}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#020617;
+}
+
+header img{height:64px}
 header .title{font-size:20px;font-weight:700;color:var(--accent)}
 header .clock{font-size:18px;color:var(--muted)}
 
@@ -43,27 +41,50 @@ main{
   display:grid;
   grid-template-rows:1fr 1fr 1fr;
   gap:12px;
-  height:calc(100vh - 80px);
+  height:calc(100vh - 90px);
 }
 
-.card{background:var(--card);border-radius:10px;padding:10px;overflow:auto}
-.card h2{text-align:center;color:var(--accent);margin:0 0 8px}
+.card{
+  background:var(--card);
+  border-radius:10px;
+  padding:10px;
+  overflow:auto;
+}
 
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:6px;border-bottom:1px solid rgba(255,255,255,.1)}
-th{background:#0435bf}
+.card h2{
+  margin:0 0 8px;
+  text-align:center;
+  color:var(--accent);
+}
 
-/* carrossel */
-#carousel-content{min-height:120px}
-.fade{animation:fade .6s}
-@keyframes fade{from{opacity:.2}to{opacity:1}}
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:14px;
+}
+
+th,td{
+  padding:6px;
+  border-bottom:1px solid rgba(255,255,255,.15);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+th{
+  background:#0435bf;
+}
+
+#carousel > div{width:100%}
 </style>
 </head>
 
 <body>
-<header>  
- <img src="logo.png" alt="Logo (coloque logo.png na mesma pasta)" onerror="this.style.display='none'">
- <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
+
+<header>
+  <img src="logo.png" onerror="this.style.display='none'">
+  <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
   <div class="clock" id="clock"></div>
 </header>
 
@@ -78,224 +99,102 @@ th{background:#0435bf}
     <div id="agenda">Carregando...</div>
   </section>
 
-  <!-- CARROSSEL INFERIOR -->
   <section class="card">
-  <h2 id="carousel-title">AGENDA SERVIÇO SOCIAL</h2>
-
-  <div id="carousel">
-    <div id="carousel-ss"></div>
-    <div id="carousel-avisos" style="display:none"></div>
-  </div>
-</section>
+    <h2 id="carousel-title">AGENDA SERVIÇO SOCIAL</h2>
+    <div id="carousel">
+      <div id="carousel-ss"></div>
+      <div id="carousel-avisos" style="display:none"></div>
+    </div>
+  </section>
 </main>
 
-<div class="small">Atualização automática a cada 60s • Fonte: Google Sheets (GViz)</div>
-
-
 <script>
-/* ============================
-   CONFIG — coloque seu Sheet ID
-   ============================ */
 const SHEET_ID = "1Ch3AjQ0MDo4WuQWFDR3r8nZrHb4yQkSLOtT5_QgxT6E";
 
-/* nomes exatos das abas (case-sensitive) */
 const TAB_PAINEL = "PAINEL";
 const TAB_AGENDA = "AGENDA DO DIA";
 const TAB_SS = "AGENDA SERVIÇO SOCIAL";
+const TAB_AVISOS = "AVISOS";
 
-/* ============================
-   RELÓGIO (pt-BR)
-   ============================ */
+/* relógio */
 function updateClock(){
-  const now = new Date();
-  const optsDate = { day:"2-digit", month:"2-digit", year:"numeric" };
-  const optsTime = { hour:"2-digit", minute:"2-digit", second:"2-digit" };
-  document.getElementById("clock").textContent = now.toLocaleDateString("pt-BR",optsDate) + " — " + now.toLocaleTimeString("pt-BR",optsTime);
+  const n=new Date();
+  clock.textContent =
+    n.toLocaleDateString("pt-BR") + " — " +
+    n.toLocaleTimeString("pt-BR");
 }
-setInterval(updateClock,1000);
-updateClock();
+setInterval(updateClock,1000); updateClock();
 
-/* ============================
-   Helpers: escape + parse gviz robusto
-   ============================ */
-function escapeHtml(s){ return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-
-function parseGvizText(text){
-  // procura primeiro "{" e último "}" e parseia
-  const first = text.indexOf("{");
-  const last  = text.lastIndexOf("}");
-  if (first === -1 || last === -1) throw new Error("Resposta inesperada do Google Sheets");
-  const jsonText = text.substring(first, last+1);
-  return JSON.parse(jsonText);
+/* helpers */
+function parseGviz(text){
+  const i=text.indexOf("{");
+  const j=text.lastIndexOf("}");
+  return JSON.parse(text.slice(i,j+1));
 }
 
-/* ============================
-   Formatação robusta de célula
-   - trata Date(yyyy,mm,dd[,HH,MM,SS])
-   - trata TimeOfDay(H,M,S)
-   - trata ISO YYYY-MM-DD[T ]HH:MM:SS
-   - somenteHora flag: se true, retorna apenas HH:MM quando aplicável
-   ============================ */
-function formatCell(raw, somenteHora=false){
-  if (raw === null || raw === undefined) return "";
-
-  // objetos com v/f
-  if (typeof raw === "object"){
-    if ("v" in raw) return formatCell(raw.v, somenteHora);
-    if ("f" in raw) return formatCell(raw.f, somenteHora);
-    try { return JSON.stringify(raw); } catch(e){ return String(raw); }
+function formatCell(v){
+  if(v==null) return "";
+  const s=String(v);
+  const m=s.match(/^Date\((\d+),(\d+),(\d+),?(\d+)?,?(\d+)?/);
+  if(m){
+    if(m[1]==1899) return `${m[4].padStart(2,"0")}:${(m[5]||"0").padStart(2,"0")}`;
+    return `${m[3].padStart(2,"0")}/${(+m[2]+1).toString().padStart(2,"0")}/${m[1]}` +
+      (m[4]?` ${m[4].padStart(2,"0")}:${(m[5]||"0").padStart(2,"0")}`:"");
   }
-
-  const s = String(raw).trim();
-
-  // Date(YYYY,MM,DD[,HH,MM,SS])
-  const dateMatch = s.match(/^Date\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d+)\s*)?)?\)/);
-  if (dateMatch){
-    const ano = Number(dateMatch[1]);
-    const mes0 = Number(dateMatch[2]); // 0-based
-    const dia = Number(dateMatch[3]);
-    const hh = dateMatch[4] !== undefined ? Number(dateMatch[4]) : null;
-    const mm = dateMatch[5] !== undefined ? Number(dateMatch[5]) : 0;
-
-    // Se ano = 1899 (sheet time-only), retornar HH:MM
-    if (ano === 1899){
-      if (somenteHora) return `${String(hh ?? 0).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
-      // se não pedir somenteHora, ainda retornar só hora (evitar mostrar '30/12/1899')
-      return `${String(hh ?? 0).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
-    }
-
-    // data real
-    if (hh !== null && somenteHora){
-      // se pediram somente hora e a data tem hora, retornar HH:MM
-      return `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
-    }
-    const mes = String(mes0 + 1).padStart(2,"0");
-    return `${String(dia).padStart(2,"0")}/${mes}/${ano}` + (hh !== null ? ` ${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}` : "");
-  }
-
-  // TimeOfDay(H,M,S)
-  const timeMatch = s.match(/^TimeOfDay\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
-  if (timeMatch){
-    const hh = String(timeMatch[1]).padStart(2,"0");
-    const mm = String(timeMatch[2]).padStart(2,"0");
-    return somenteHora ? `${hh}:${mm}` : `${hh}:${mm}:${String(timeMatch[3]).padStart(2,"0")}`;
-  }
-
-  // ISO date/datetime YYYY-MM-DD[ T hh:mm:ss]
-  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}):?(\d{2})?)?/);
-  if (iso){
-    const ano = iso[1], mes = iso[2], dia = iso[3];
-    if (iso[4]){
-      const hh = String(iso[4]).padStart(2,"0"), mm = String(iso[5] ?? "00").padStart(2,"0");
-      return somenteHora ? `${hh}:${mm}` : `${dia}/${mes}/${ano} ${hh}:${mm}`;
-    }
-    return `${dia}/${mes}/${ano}`;
-  }
-
-  // fallback: texto puro
   return s;
 }
-  
 
-/* ============================
-   Render genérico
-   - aplica regra somenteHora para colunas cujo header inclua "hora"
-   - regra válida em PAINEL e AGENDA DO DIA (conforme sua solicitação)
-   - status styling (andamento, concluído, cancelado) para agendas e painel
-   ============================ */
-function renderTable(containerId, sheetName, gvizJson){
-  const cols = (gvizJson.table.cols || []).map(c => c.label || "");
-  const rows = (gvizJson.table.rows || []).map(r => (r.c || []).map(cell => (cell ? cell.v : "")));
+function renderTable(id, data){
+  const cols=data.table.cols.map(c=>c.label||"");
+  const rows=data.table.rows;
 
-  // build HTML table
-  let html = "<table><thead><tr>";
-  cols.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
-  html += "</tr></thead><tbody>";
+  let h="<table><thead><tr>";
+  cols.forEach(c=>h+=`<th>${c}</th>`);
+  h+="</tr></thead><tbody>";
 
-  rows.forEach(row => {
-    // status from last column (if exists)
-    const rawStatus = String(row[row.length - 1] ?? "").toLowerCase();
-    let classe = "";
-    if (rawStatus.includes("andamento")) classe = "status-andamento";
-    if (rawStatus.includes("atendido")) classe = "status-atendido";
-    if (rawStatus.includes("concluído") || rawStatus.includes("concluido")) classe = "status-concluido";
-    if (rawStatus.includes("cancelado")) classe = "status-cancelado";
-
-    html += `<tr class="${classe}">`;
-
-    row.forEach((cell, idx) => {
-      // determine if this column is "Hora" and rule applies (PAINEL or AGENDA DO DIA)
-      const header = cols[idx] || "";
-      const isHoraColumn = /hora/i.test(header);
-      const appliesHoraRule = isHoraColumn && (sheetName === TAB_PAINEL || sheetName === TAB_AGENDA);
-
-      const formatted = formatCell(cell, appliesHoraRule);
-      html += `<td>${escapeHtml(formatted)}</td>`;
-    });
-
-    html += "</tr>";
+  rows.forEach(r=>{
+    h+="<tr>";
+    r.c.forEach(c=>h+=`<td>${formatCell(c?.v)}</td>`);
+    h+="</tr>";
   });
 
-  html += "</tbody></table>";
-  document.getElementById(containerId).innerHTML = html;
+  h+="</tbody></table>";
+  document.getElementById(id).innerHTML=h;
 }
 
-  
-
-/* ================= LOAD SHEETS ================= */
 async function loadSheet(name){
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
-  const r=await fetch(url,{cache:"no-store"});
-  return parseGViz(await r.text());
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`);
+  return parseGviz(await r.text());
 }
 
-/* ================= CARROSSEL ================= */
-let carouselIndex = 0;
-
+/* carrossel */
+let idx=0;
 function toggleCarousel(){
-  const title = document.getElementById("carousel-title");
-  const ss = document.getElementById("carousel-ss");
-  const avisos = document.getElementById("carousel-avisos");
-
-  if (carouselIndex === 0){
-    ss.style.display = "block";
-    avisos.style.display = "none";
-    title.innerText = "AGENDA SERVIÇO SOCIAL";
-  } else {
-    ss.style.display = "none";
-    avisos.style.display = "block";
-    title.innerText = "AVISOS";
-  }
-
-  carouselIndex = (carouselIndex + 1) % 2;
+  carousel-ss.style.display = idx===0?"block":"none";
+  carousel-avisos.style.display = idx===1?"block":"none";
+  carousel-title.innerText = idx===0?TAB_SS:TAB_AVISOS;
+  idx=(idx+1)%2;
 }
 
-
-/* ================= MAIN ================= */
+/* main */
 async function loadAll(){
-  try{
-    const [p,a,ss,av] = await Promise.all([
-      loadSheet(TAB_PAINEL),
-      loadSheet(TAB_AGENDA),
-      loadSheet(TAB_SS),
-      loadSheet(TAB_AVISOS)
-    ]);
+  const [p,a,ss,av]=await Promise.all([
+    loadSheet(TAB_PAINEL),
+    loadSheet(TAB_AGENDA),
+    loadSheet(TAB_SS),
+    loadSheet(TAB_AVISOS)
+  ]);
 
-    renderTable("painel", p);
-    renderTable("agenda", a);
-    renderTable("carousel-ss", ss);
-    renderTable("carousel-avisos", av);
-
-  }catch(e){
-    console.error(e);
-  }
+  renderTable("painel",p);
+  renderTable("agenda",a);
+  renderTable("carousel-ss",ss);
+  renderTable("carousel-avisos",av);
 }
 
 loadAll();
-setInterval(loadAll, 60000);
-setInterval(toggleCarousel, 7000);
-
+setInterval(loadAll,60000);
+setInterval(toggleCarousel,7000);
 </script>
+
 </body>
 </html>
-<div class=
