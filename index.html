@@ -93,14 +93,19 @@ th{background:#0435bf}
 
 
 <script>
-/* ================= CONFIG ================= */
+/* ============================
+   CONFIG — coloque seu Sheet ID
+   ============================ */
 const SHEET_ID = "1Ch3AjQ0MDo4WuQWFDR3r8nZrHb4yQkSLOtT5_QgxT6E";
+
+/* nomes exatos das abas (case-sensitive) */
 const TAB_PAINEL = "PAINEL";
 const TAB_AGENDA = "AGENDA DO DIA";
 const TAB_SS = "AGENDA SERVIÇO SOCIAL";
-const TAB_AVISOS = "AVISOS";
 
-/* ================= CLOCK ================= */
+/* ============================
+   RELÓGIO (pt-BR)
+   ============================ */
 function updateClock(){
   const now = new Date();
   const optsDate = { day:"2-digit", month:"2-digit", year:"numeric" };
