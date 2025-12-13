@@ -140,6 +140,51 @@ function renderTable(containerId, json){
   el.innerHTML=html;
 }
 
+/* ============================
+   Render genérico
+   - aplica regra somenteHora para colunas cujo header inclua "hora"
+   - regra válida em PAINEL e AGENDA DO DIA (conforme sua solicitação)
+   - status styling (andamento, concluído, cancelado) para agendas e painel
+   ============================ */
+function renderTable(containerId, sheetName, gvizJson){
+  const cols = (gvizJson.table.cols || []).map(c => c.label || "");
+  const rows = (gvizJson.table.rows || []).map(r => (r.c || []).map(cell => (cell ? cell.v : "")));
+
+  // build HTML table
+  let html = "<table><thead><tr>";
+  cols.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
+  html += "</tr></thead><tbody>";
+
+  rows.forEach(row => {
+    // status from last column (if exists)
+    const rawStatus = String(row[row.length - 1] ?? "").toLowerCase();
+    let classe = "";
+    if (rawStatus.includes("andamento")) classe = "status-andamento";
+    if (rawStatus.includes("atendido")) classe = "status-atendido";
+    if (rawStatus.includes("concluído") || rawStatus.includes("concluido")) classe = "status-concluido";
+    if (rawStatus.includes("cancelado")) classe = "status-cancelado";
+
+    html += `<tr class="${classe}">`;
+
+    row.forEach((cell, idx) => {
+      // determine if this column is "Hora" and rule applies (PAINEL or AGENDA DO DIA)
+      const header = cols[idx] || "";
+      const isHoraColumn = /hora/i.test(header);
+      const appliesHoraRule = isHoraColumn && (sheetName === TAB_PAINEL || sheetName === TAB_AGENDA);
+
+      const formatted = formatCell(cell, appliesHoraRule);
+      html += `<td>${escapeHtml(formatted)}</td>`;
+    });
+
+    html += "</tr>";
+  });
+
+  html += "</tbody></table>";
+  document.getElementById(containerId).innerHTML = html;
+}
+
+  
+
 /* ================= LOAD SHEETS ================= */
 async function loadSheet(name){
   const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
