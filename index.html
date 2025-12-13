@@ -110,34 +110,18 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-/* ================= HELPERS ================= */
-function parseGViz(t){
-  const j=t.substring(t.indexOf("{"),t.lastIndexOf("}")+1);
-  return JSON.parse(j);
-}
+/* ============================
+   Helpers: escape + parse gviz robusto
+   ============================ */
+function escapeHtml(s){ return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-function ensureElement(id){
-  let el=document.getElementById(id);
-  if(!el){
-    el=document.createElement("div");
-    el.id=id;
-    document.body.appendChild(el);
-  }
-  return el;
-}
-
-function renderTable(containerId, json){
-  const el=ensureElement(containerId);
-  let html="<table><thead><tr>";
-  json.table.cols.forEach(c=>html+=`<th>${c.label||""}</th>`);
-  html+="</tr></thead><tbody>";
-  json.table.rows.forEach(r=>{
-    html+="<tr>";
-    r.c.forEach(c=>html+=`<td>${c?.v ?? ""}</td>`);
-    html+="</tr>";
-  });
-  html+="</tbody></table>";
-  el.innerHTML=html;
+function parseGvizText(text){
+  // procura primeiro "{" e último "}" e parseia
+  const first = text.indexOf("{");
+  const last  = text.lastIndexOf("}");
+  if (first === -1 || last === -1) throw new Error("Resposta inesperada do Google Sheets");
+  const jsonText = text.substring(first, last+1);
+  return JSON.parse(jsonText);
 }
 
 /* ============================
