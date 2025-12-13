@@ -141,6 +141,74 @@ function renderTable(containerId, json){
 }
 
 /* ============================
+   Formatação robusta de célula
+   - trata Date(yyyy,mm,dd[,HH,MM,SS])
+   - trata TimeOfDay(H,M,S)
+   - trata ISO YYYY-MM-DD[T ]HH:MM:SS
+   - somenteHora flag: se true, retorna apenas HH:MM quando aplicável
+   ============================ */
+function formatCell(raw, somenteHora=false){
+  if (raw === null || raw === undefined) return "";
+
+  // objetos com v/f
+  if (typeof raw === "object"){
+    if ("v" in raw) return formatCell(raw.v, somenteHora);
+    if ("f" in raw) return formatCell(raw.f, somenteHora);
+    try { return JSON.stringify(raw); } catch(e){ return String(raw); }
+  }
+
+  const s = String(raw).trim();
+
+  // Date(YYYY,MM,DD[,HH,MM,SS])
+  const dateMatch = s.match(/^Date\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d+)\s*)?)?\)/);
+  if (dateMatch){
+    const ano = Number(dateMatch[1]);
+    const mes0 = Number(dateMatch[2]); // 0-based
+    const dia = Number(dateMatch[3]);
+    const hh = dateMatch[4] !== undefined ? Number(dateMatch[4]) : null;
+    const mm = dateMatch[5] !== undefined ? Number(dateMatch[5]) : 0;
+
+    // Se ano = 1899 (sheet time-only), retornar HH:MM
+    if (ano === 1899){
+      if (somenteHora) return `${String(hh ?? 0).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+      // se não pedir somenteHora, ainda retornar só hora (evitar mostrar '30/12/1899')
+      return `${String(hh ?? 0).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+    }
+
+    // data real
+    if (hh !== null && somenteHora){
+      // se pediram somente hora e a data tem hora, retornar HH:MM
+      return `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+    }
+    const mes = String(mes0 + 1).padStart(2,"0");
+    return `${String(dia).padStart(2,"0")}/${mes}/${ano}` + (hh !== null ? ` ${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}` : "");
+  }
+
+  // TimeOfDay(H,M,S)
+  const timeMatch = s.match(/^TimeOfDay\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
+  if (timeMatch){
+    const hh = String(timeMatch[1]).padStart(2,"0");
+    const mm = String(timeMatch[2]).padStart(2,"0");
+    return somenteHora ? `${hh}:${mm}` : `${hh}:${mm}:${String(timeMatch[3]).padStart(2,"0")}`;
+  }
+
+  // ISO date/datetime YYYY-MM-DD[ T hh:mm:ss]
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2}):?(\d{2})?)?/);
+  if (iso){
+    const ano = iso[1], mes = iso[2], dia = iso[3];
+    if (iso[4]){
+      const hh = String(iso[4]).padStart(2,"0"), mm = String(iso[5] ?? "00").padStart(2,"0");
+      return somenteHora ? `${hh}:${mm}` : `${dia}/${mes}/${ano} ${hh}:${mm}`;
+    }
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  // fallback: texto puro
+  return s;
+}
+  
+
+/* ============================
    Render genérico
    - aplica regra somenteHora para colunas cujo header inclua "hora"
    - regra válida em PAINEL e AGENDA DO DIA (conforme sua solicitação)
