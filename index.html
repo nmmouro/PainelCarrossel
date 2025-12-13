@@ -1,191 +1,132 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Painel da Frota - TV Fullscreen</title>
-<meta http-equiv="refresh" content="3600">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Painel - Frota (GViz)</title>
+
 <style>
-    body {
-        margin: 0;
-        background: #111;
-        color: white;
-        font-family: Arial, sans-serif;
-        overflow: hidden;
-    }
+:root{
+  --bg:#071029; --card:#2a71e8; --muted:#f7f9fa;
+  --accent:#00eaff;
+}
+html,body{height:100%;margin:0;background:var(--bg);color:#fff;font-family:Arial}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#020617}
+header .title{font-size:20px;font-weight:700;color:var(--accent)}
+header .clock{font-size:18px;color:var(--muted)}
 
-    header {
-        text-align: center;
-        padding: 15px;
-        background: #000;
-        border-bottom: 3px solid #444;
-    }
+main{
+  padding:12px;
+  display:grid;
+  grid-template-rows:1fr 1fr 1fr;
+  gap:12px;
+  height:calc(100vh - 80px);
+}
 
-    header img {
-        height: 70px;
-    }
+.card{background:var(--card);border-radius:10px;padding:10px;overflow:auto}
+.card h2{text-align:center;color:var(--accent);margin:0 0 8px}
 
-    .tela {
-        width: 100vw;
-        height: calc(100vh - 120px);
-        position: absolute;
-        top: 120px;
-        left: 0;
-        opacity: 0;
-        transition: opacity 1s ease-in-out;
-        padding: 20px;
-    }
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:6px;border-bottom:1px solid rgba(255,255,255,.1)}
+th{background:#0435bf}
 
-    .ativa {
-        opacity: 1;
-    }
-
-    h1 {
-        text-align: center;
-        margin-bottom: 15px;
-        font-size: 40px;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 26px;
-    }
-
-    th {
-        background: #333;
-        padding: 10px;
-        font-size: 28px;
-        border-bottom: 2px solid #777;
-    }
-
-    td {
-        padding: 10px;
-        border-bottom: 1px solid #444;
-    }
-
-    .cancelado {
-        background: rgba(255, 0, 0, 0.3);
-        animation: piscar 1s infinite;
-    }
-
-    @keyframes piscar {
-        0% { background: rgba(255, 0, 0, 0.6); }
-        50% { background: rgba(255, 0, 0, 0.2); }
-        100% { background: rgba(255, 0, 0, 0.6); }
-    }
-
-    .status-andamento { background: rgba(255,140,0,0.4); }
-    .status-concluido { background: rgba(0,180,0,0.4); }
+/* carrossel */
+#carousel-content{min-height:120px}
+.fade{animation:fade .6s}
+@keyframes fade{from{opacity:.2}to{opacity:1}}
 </style>
 </head>
-<body>
 
+<body>
 <header>
-    <img src="logo.png">
+  <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
+  <div class="clock" id="clock"></div>
 </header>
 
-<div id="painel" class="tela ativa"></div>
-<div id="agenda" class="tela"></div>
-<div id="social" class="tela"></div>
+<main>
+  <section class="card">
+    <h2>PAINEL</h2>
+    <div id="painel">Carregando...</div>
+  </section>
+
+  <section class="card">
+    <h2>AGENDA DO DIA</h2>
+    <div id="agenda">Carregando...</div>
+  </section>
+
+  <!-- CARROSSEL INFERIOR -->
+  <section class="card">
+    <h2 id="carousel-title">AGENDA SERVIÇO SOCIAL</h2>
+    <div id="carousel-content">Carregando...</div>
+  </section>
+</main>
 
 <script>
+/* ================= CONFIG ================= */
 const SHEET_ID = "1Ch3AjQ0MDo4WuQWFDR3r8nZrHb4yQkSLOtT5_QgxT6E";
+const TAB_PAINEL = "PAINEL";
+const TAB_AGENDA = "AGENDA DO DIA";
+const TAB_SS = "AGENDA SERVIÇO SOCIAL";
+const TAB_AVISOS = "AVISOS";
 
-// ✨ função para converter Date(2025,11,10) → 10/12/2025
-function parseDate(value) {
-    if (!value || typeof value !== "string") return value;
+/* ================= CLOCK ================= */
+function clock(){
+  const d=new Date();
+  document.getElementById("clock").innerText =
+    d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR");
+}
+setInterval(clock,1000); clock();
 
-    if (value.startsWith("Date(")) {
-        const m = value.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+))?/);
-        if (!m) return value;
-
-        const ano = +m[1];
-        const mes = +m[2] + 1;
-        const dia = +m[3];
-
-        const hora = m[4] ? String(m[4]).padStart(2, "0") : "";
-        const minuto = m[5] ? String(m[5]).padStart(2, "0") : "";
-
-        if (hora) return `${hora}:${minuto}`;
-        return `${String(dia).padStart(2,"0")}/${String(mes).padStart(2,"0")}/${ano}`;
-    }
-
-    return value;
+/* ================= HELPERS ================= */
+function parseGViz(t){
+  const j=t.substring(t.indexOf("{"),t.lastIndexOf("}")+1);
+  return JSON.parse(j);
 }
 
-// ✨ Função que carrega uma aba da planilha
-async function loadSheet(sheetName) {
-    const url =
-      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}&nocache=` +
-      Math.random();
-
-    const raw = await fetch(url).then(r => r.text());
-    const clean = raw.replace("/*O_o*/", "").replace(/[\n\r]/g, "");
-    const json = JSON.parse(clean.substring(47, clean.length - 2));
-
-    const cols = json.table.cols.map(c => c.label);
-    const rows = json.table.rows.map(r => r.c.map(c => (c ? c.v : "")));
-
-    return { cols, rows };
+function ensureElement(id){
+  let el=document.getElementById(id);
+  if(!el){
+    el=document.createElement("div");
+    el.id=id;
+    document.body.appendChild(el);
+  }
+  return el;
 }
 
-// ✨ Renderização de tabelas com destaque de status
-function renderTable(elementId, title, cols, rows) {
-    let html = `<h1>${title}</h1><table><tr>`;
-
-    cols.forEach(c => html += `<th>${c}</th>`);
-    html += "</tr>";
-
-    rows.forEach(r => {
-
-        // Converte datas e horas
-        const formatted = r.map(parseDate);
-
-        // DETECTA STATUS
-        let cls = "";
-        const status = formatted[formatted.length - 1].toString().toLowerCase();
-
-        if (status.includes("cancel")) cls = "cancelado";
-        else if (status.includes("andamento")) cls = "status-andamento";
-        else if (status.includes("conclu")) cls = "status-concluido";
-
-        html += `<tr class="${cls}">`;
-        formatted.forEach(v => html += `<td>${v}</td>`);
-        html += "</tr>";
-    });
-
-    html += "</table>";
-
-    document.getElementById(elementId).innerHTML = html;
+function renderTable(containerId, json){
+  const el=ensureElement(containerId);
+  let html="<table><thead><tr>";
+  json.table.cols.forEach(c=>html+=`<th>${c.label||""}</th>`);
+  html+="</tr></thead><tbody>";
+  json.table.rows.forEach(r=>{
+    html+="<tr>";
+    r.c.forEach(c=>html+=`<td>${c?.v ?? ""}</td>`);
+    html+="</tr>";
+  });
+  html+="</tbody></table>";
+  el.innerHTML=html;
 }
 
-// ✨ Carregar tudo
-async function atualizar() {
-    // PAINEL
-    const p = await loadSheet("PAINEL");
-    renderTable("painel", "Movimentação - Diário de Bordo", p.cols, p.rows);
-
-    // AGENDA DO DIA (HORA corrigida)
-    const a = await loadSheet("AGENDA DO DIA");
-    renderTable("agenda", "Agenda do Dia", a.cols, a.rows);
-
-    // SERVIÇO SOCIAL
-    const s = await loadSheet("AGENDA SERVIÇO SOCIAL");
-    renderTable("social", "Agenda Serviço Social", s.cols, s.rows);
+/* ================= LOAD SHEETS ================= */
+async function loadSheet(name){
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+  const r=await fetch(url,{cache:"no-store"});
+  return parseGViz(await r.text());
 }
 
-// Carrega agora e atualiza a cada 60s
-atualizar();
-setInterval(atualizar, 60000);
+/* ================= CARROSSEL ================= */
+let carouselIndex=0;
+let carouselData=[];
 
-// ✨ Carrossel automático
-let tela = 0;
-setInterval(() => {
-    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
-    ["painel", "agenda", "social"][tela].classList.add("ativa");
-    tela = (tela + 1) % 3;
-}, 10000);
-</script>
+function showCarousel(){
+  const title=document.getElementById("carousel-title");
+  const box=document.getElementById("carousel-content");
 
-</body>
-</html>
+  const item=carouselData[carouselIndex];
+  title.innerText=item.title;
+  box.innerHTML=item.html;
+  box.classList.remove("fade");
+  void box.offsetWidth;
+  box.classList.add("fade");
+
+  carouselIndex=(carouselI
