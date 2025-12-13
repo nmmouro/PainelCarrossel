@@ -38,7 +38,7 @@ th{background:#0435bf}
 </head>
 
 <body>
-<header>
+<header>  
   <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
   <div class="clock" id="clock"></div>
 </header>
@@ -56,10 +56,14 @@ th{background:#0435bf}
 
   <!-- CARROSSEL INFERIOR -->
   <section class="card">
-    <h2 id="carousel-title">AGENDA SERVIÇO SOCIAL</h2>
-    <div id="carousel-content">Carregando...</div>
-  </section>
-</main>
+  <h2 id="carousel-title">AGENDA SERVIÇO SOCIAL</h2>
+
+  <div id="carousel">
+    <div id="carousel-ss"></div>
+    <div id="carousel-avisos" style="display:none"></div>
+  </div>
+</section>
+
 
 <script>
 /* ================= CONFIG ================= */
@@ -115,45 +119,51 @@ async function loadSheet(name){
 }
 
 /* ================= CARROSSEL ================= */
-let carouselIndex=0;
-let carouselData=[];
+let carouselIndex = 0;
 
-function showCarousel(){
-  const title=document.getElementById("carousel-title");
-  const box=document.getElementById("carousel-content");
+function toggleCarousel(){
+  const title = document.getElementById("carousel-title");
+  const ss = document.getElementById("carousel-ss");
+  const avisos = document.getElementById("carousel-avisos");
 
-  const item=carouselData[carouselIndex];
-  title.innerText=item.title;
-  box.innerHTML=item.html;
-  box.classList.remove("fade");
-  void box.offsetWidth;
-  box.classList.add("fade");
+  if (carouselIndex === 0){
+    ss.style.display = "block";
+    avisos.style.display = "none";
+    title.innerText = "AGENDA SERVIÇO SOCIAL";
+  } else {
+    ss.style.display = "none";
+    avisos.style.display = "block";
+    title.innerText = "AVISOS";
+  }
 
-  carouselIndex=(carouselIndex+1)%carouselData.length;
+  carouselIndex = (carouselIndex + 1) % 2;
 }
+
 
 /* ================= MAIN ================= */
 async function loadAll(){
-  const [p,a,ss,av]=await Promise.all([
-    loadSheet(TAB_PAINEL),
-    loadSheet(TAB_AGENDA),
-    loadSheet(TAB_SS),
-    loadSheet(TAB_AVISOS)
-  ]);
+  try{
+    const [p,a,ss,av] = await Promise.all([
+      loadSheet(TAB_PAINEL),
+      loadSheet(TAB_AGENDA),
+      loadSheet(TAB_SS),
+      loadSheet(TAB_AVISOS)
+    ]);
 
-  renderTable("painel",p);
-  renderTable("agenda",a);
+    renderTable("painel", p);
+    renderTable("agenda", a);
+    renderTable("carousel-ss", ss);
+    renderTable("carousel-avisos", av);
 
-  carouselData=[
-    {title:"AGENDA SERVIÇO SOCIAL", html:(()=>{const d=document.createElement("div");renderTable(d.id="tmp1",ss);return d.innerHTML})()},
-    {title:"AVISOS", html:(()=>{const d=document.createElement("div");renderTable(d.id="tmp2",av);return d.innerHTML})()}
-  ];
-
-  showCarousel();
-  setInterval(showCarousel,6000);
+  }catch(e){
+    console.error(e);
+  }
 }
 
 loadAll();
+setInterval(loadAll, 60000);
+setInterval(toggleCarousel, 7000);
+
 </script>
 </body>
 </html>
