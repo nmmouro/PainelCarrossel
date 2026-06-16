@@ -1,12 +1,19 @@
-async function fetchSheet(sheet){
+import { SHEET_ID } from "./config.js";
+import { parseGviz } from "./utils.js";
 
-  let query = "";
+function buildQuery(sheet){
+  switch(sheet){
+    case "LANÇAMENTOS": return "select B,C,D,E,F,G,X";
+    case "AGENDA DO DIA": return "select B,C,D,E,F,G,H";
+    case "AGENDA SERVIÇO SOCIAL": return "select B,C,D,F,G,H";
+    case "VEÍCULOS": return "select B,V,M,N";
+    case "MOTORISTAS": return "select A,B,C";
+    default: return "";
+  }
+}
 
-  if(sheet === "LANÇAMENTOS") query = "select B,C,D,E,F,G,X";
-  if(sheet === "AGENDA DO DIA") query = "select B,C,D,E,F,G,H";
-  if(sheet === "AGENDA SERVIÇO SOCIAL") query = "select B,C,D,F,G,H";
-  if(sheet === "VEÍCULOS") query = "select B,V,M,N";
-  if(sheet === "MOTORISTAS") query = "select A,B,C";
+export async function fetchSheet(sheet){
+  const query = buildQuery(sheet);
 
   const url =
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq` +
@@ -15,5 +22,10 @@ async function fetchSheet(sheet){
     `&tqx=out:json`;
 
   const res = await fetch(url);
+
+  if(!res.ok){
+    throw new Error(`Erro HTTP ${res.status}`);
+  }
+
   return parseGviz(await res.text());
 }
