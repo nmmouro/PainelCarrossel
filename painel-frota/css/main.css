@@ -1,31 +1,9 @@
-<main>
- </div>
+main {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 
-  <div class="center">
-
-  <div class="title">
-    MOVIMENTAÇÃO DIÁRIA
-  </div>
-
-</div>
-
-<div class="right">
-
-    <div id="clock"></div>
-
-    <div class="actions">
-
-      <button id="toggle-audio">
-        🔊 SOM ON
-      </button>
-
-      <button id="toggle-fullscreen">
-        ⛶ TELA CHEIA
-      </button>
-
-    </div>
-
-  </div>
-
-</main>
-
+    overflow: auto;
+  }
