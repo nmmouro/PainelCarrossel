@@ -238,3 +238,17 @@ tbody tr:nth-child(even) td{
     font-size:0.7rem;
   }
 }
+
+.status-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+}
+
+.card-actions{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+}
