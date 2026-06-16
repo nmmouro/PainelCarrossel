@@ -1,31 +1,14 @@
-import { Table } from "./components/Table.js";
+import { DataTable, initDataTable } from "./components/DataTable.js";
 import { Card } from "./components/Card.js";
-
-function renderPainel(rows){
-
-  return Card({
-    title: "PAINEL",
-    content: Table({
-      headers:[
-        "Data","Hora","Empregado","Veículo",
-        "Motivo","Itinerário","Status"
-      ],
-      rows
-    })
-  });
-}
 
 function renderAgenda(rows){
 
-  return Card({
-    title: "AGENDA DO DIA",
-    actions: `
-      <span onclick="window.open('agenda.html')"
-        style="position:absolute; right:10px; cursor:pointer;">
-        📅
-      </span>
-    `,
-    content: Table({
+  const id = "agenda";
+
+  const html = Card({
+    title:"AGENDA DO DIA",
+    content: DataTable({
+      id,
       headers:[
         "Data","Hora","Passageiro","Setor",
         "Motivo","Itinerário","Status"
@@ -33,4 +16,8 @@ function renderAgenda(rows){
       rows
     })
   });
+
+  setTimeout(()=> initDataTable(`dt-${id}`), 0);
+
+  return html;
 }
