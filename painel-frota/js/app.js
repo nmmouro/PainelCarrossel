@@ -1,27 +1,45 @@
+import { TABS } from "./config.js";
+import { fetchSheet } from "./api.js";
+import { renderTable } from "./render.js";
+import { renderVeiculos } from "./modules/veiculos.js";
+
+const app = document.getElementById("app");
+
 async function loadAll(){
 
-  const app = document.getElementById("app");
-
-  const results = await Promise.all(TABS.map(t=>fetchSheet(t.sheet)));
+  const results = await Promise.all(
+    TABS.map(t => fetchSheet(t.sheet))
+  );
 
   app.innerHTML = "";
 
-  const painelIndex = TABS.findIndex(t=>t.id==="painel");
-  const painelRows = results[painelIndex].table.rows || [];
+  const painelRows =
+    results[2].table.rows || [];
 
-  results.forEach((data,index)=>{
+  // VEÍCULOS
+  const veiculosRows =
+    results[0].table.rows || [];
 
-    const tab = TABS[index];
+  app.innerHTML += `
+    <section class="card">
+      <h2>VEÍCULOS</h2>
+      ${renderVeiculos(veiculosRows, painelRows)}
+    </section>
+  `;
 
-    const section = document.createElement("section");
-    section.className = "card";
+  // OUTRAS TABELAS
+  TABS.forEach((tab,i) => {
 
-    section.innerHTML = `
-      <h2>${tab.title}</h2>
-      ${renderTable(tab.headers, data.table.rows)}
+    if(tab.id==="veiculos") return;
+
+    const rows = results[i].table.rows || [];
+
+    app.innerHTML += `
+      <section class="card">
+        <h2>${tab.title}</h2>
+        ${renderTable(tab.headers || [], rows)}
+      </section>
     `;
-
-    app.appendChild(section);
   });
 }
 
