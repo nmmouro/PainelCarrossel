@@ -1,50 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Painel Frota</title>
 
 <link rel="stylesheet" href="css/main.css">
+
 </head>
 
 <body>
 
-<audio id="beep">
-    <source src="assets/alerta.mp3" type="audio/mpeg">
+<audio id="beep" preload="auto">
+  <source src="./alerta.mp3" type="audio/mpeg">
 </audio>
 
 <header class="topbar">
 
-    <div class="left">
-        <img src="assets/logo.png" class="logo">
+  <div class="left">
+
+    <img
+      src="logo.png"
+      class="logo"
+      onerror="this.style.display='none'"
+    >
+
+  </div>
+
+  <div class="center">
+
+  <div class="title">
+    MOVIMENTAÇÃO DIÁRIA
+  </div>
+
+</div>
+
+<div class="right">
+
+    <div id="clock"></div>
+
+    <div class="actions">
+
+      <button id="toggle-audio">
+        🔊 SOM ON
+      </button>
+
+      <button id="toggle-fullscreen">
+        ⛶ TELA CHEIA
+      </button>
+
     </div>
 
-    <div class="center">
-        <div class="title">MOVIMENTAÇÃO DIÁRIA</div>
-    </div>
-
-    <div class="right">
-
-        <div id="clock"></div>
-
-        <div class="actions">
-
-            <button id="toggle-audio">
-                🔊 SOM ON
-            </button>
-
-            <button id="toggle-fullscreen">
-                ⛶ TELA CHEIA
-            </button>
-
-        </div>
-
-    </div>
+  </div>
 
 </header>
+
 
 <main id="app"></main>
 
