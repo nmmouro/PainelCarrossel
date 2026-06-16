@@ -252,3 +252,38 @@ tbody tr:nth-child(even) td{
   top:50%;
   transform:translateY(-50%);
 }
+
+/* ================= DATATABLE ================= */
+
+.datatable{
+  width:100%;
+}
+
+.dt-controls{
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+  gap:8px;
+}
+
+.dt-controls input,
+.dt-controls select{
+  padding:6px;
+  border-radius:8px;
+  border:none;
+  font-size:0.8rem;
+}
+
+.dt-sort{
+  cursor:pointer;
+}
+
+.dt-sort:hover{
+  background:rgba(255,255,255,.1);
+}
+
+mark{
+  background:#ffcc00;
+  color:#000;
+}
+
