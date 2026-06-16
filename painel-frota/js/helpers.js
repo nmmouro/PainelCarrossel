@@ -1,26 +1,12 @@
-export function parseGviz(txt){
+const parseGviz = txt =>
+  JSON.parse(txt.substring(txt.indexOf("{"), txt.lastIndexOf("}") + 1));
 
-    return JSON.parse(
-        txt.substring(
-            txt.indexOf("{"),
-            txt.lastIndexOf("}") + 1
-        )
-    );
-}
+const getCell = c => c?.f ?? c?.v ?? "";
 
-export function getCell(c){
+function formatarData(valor){
+  if(!valor) return "";
+  if(valor instanceof Date) return valor.toLocaleDateString("pt-BR");
 
-    return c?.f ?? c?.v ?? "";
-}
-
-export function formatarData(valor){
-
-    if(!valor) return "";
-
-    if(valor instanceof Date){
-
-        return valor.toLocaleDateString("pt-BR");
-    }
-
-    return String(valor);
+  const match = String(valor).match(/\d{1,2}\/\d{1,2}\/\d{4}/);
+  return match ? match[0] : valor;
 }
