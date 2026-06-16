@@ -20,32 +20,31 @@
 
 <!-- ================= HEADER ================= -->
 
-<header class="topbar">
+<!-- ================= HEADER ================= -->
+  <header class="topbar">
 
-  <div>
-    <img src="logo.png" class="logo" onerror="this.style.display='none'">
-  </div>
-
-  <div class="title">
-    MOVIMENTAÇÃO DIÁRIA
-  </div>
-
-  <div class="right">
-
-    <div id="clock"></div>
-
-    <div class="actions">
-      <button id="toggle-audio">🔊 SOM ON</button>
-      <button id="toggle-fullscreen">⛶ TELA CHEIA</button>
+    <div>
+      <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
     </div>
 
-  </div>
+    <div class="center">
+      <h1 class="title">MOVIMENTAÇÃO DIÁRIA</h1>
+    </div>
 
-</header>
+    <div class="right">
+      <div id="clock"></div>
+
+      <div class="actions">
+        <button id="toggle-audio">🔊 SOM</button>
+        <button id="toggle-fullscreen">⛶ TELA</button>
+      </div>
+    </div>
+
+  </header>
 
 <!-- ================= APP ================= -->
 
-<main id="app"></main>
+<main id="app" aria-live="polite"></main>
 
 <!-- ================= SCRIPTS ================= -->
 
