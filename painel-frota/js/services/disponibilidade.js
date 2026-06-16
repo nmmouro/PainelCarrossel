@@ -1,26 +1,42 @@
-function getDisponibilidade(nome, painelRows, tipo){
+function mapDisponibilidade(rows){
 
-  const alvo = String(nome).toUpperCase();
+  const mapa = {};
 
-  for(const row of painelRows){
+  rows.forEach(r=>{
+    const v = (r.c||[]).map(getCell);
 
-    const v = (row.c || []).map(getCell);
+    const motorista = String(v[2]||"").trim().toUpperCase();
+    const veiculo = String(v[3]||"").trim().toUpperCase();
+    const status = String(v[6]||"").toUpperCase();
 
-    const veiculo = String(v[3] || "").toUpperCase();
-    const motorista = String(v[2] || "").toUpperCase();
-    const status = String(v[6] || "").toUpperCase();
+    if(motorista) mapa["mot_"+motorista] = status;
+    if(veiculo) mapa["veh_"+veiculo] = status;
 
-    const match = tipo === "veiculo"
-      ? veiculo === alvo
-      : motorista === alvo;
+  });
 
-    if(!match) continue;
+  return mapa;
+}
 
-    if(status.includes("MANUTEN")) return "🔧 MANUTENÇÃO";
-    if(status.includes("VIAGEM")) return "✈️ VIAGEM";
+function getDisponibilidade(nome, mapa, tipo){
 
-    return "🔴 OCUPADO";
+  const key =
+    tipo === "veiculo"
+      ? "veh_"+nome.toUpperCase()
+      : "mot_"+nome.toUpperCase();
+
+  const status = mapa[key] || "";
+
+  if(status.includes("MANUTENCAO")){
+    return tipo === "veiculo"
+      ? '<span class="manutencao">🔧 MANUTENÇÃO</span>'
+      : '<span class="livre">🟢 LIVRE</span>';
   }
 
-  return "🟢 LIVRE";
+  if(status.includes("VIAGEM"))
+    return '<span class="viagem">✈️ VIAGEM</span>';
+
+  if(status)
+    return '<span class="ocupado">🔴 OCUPADO</span>';
+
+  return '<span class="livre">🟢 LIVRE</span>';
 }
