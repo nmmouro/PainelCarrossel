@@ -1,1 +1,79 @@
+<style>
+:root{
+  --bg:#071029;
+  --card:#2a71e8;
+  --accent:#00eaff;
+  --muted:#f7f9fa;
+}
 
+  #carousel > div{width:100%;
+}
+  table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:14px;
+}
+  th,td{
+  text-align:left;
+  padding:6px;
+  border-bottom:1px solid rgba(255,255,255,.15);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+html,body{
+  margin:0;height:100%;
+  background:var(--bg);
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 20px;
+  background:#020617;
+  border-bottom:1px solid rgba(255,255,255,0.03)
+}
+
+header img{height:66px}
+header .title{font-size:20px;font-weight:700;color:var(--accent)}
+header .clock{font-size:18px;color:var(--muted)}
+
+main{
+  padding:12px;
+  display:grid;
+  grid-template-rows:1fr 1fr 1fr;
+  gap:12px;
+  height:calc(100vh - 90px);
+  box-sizing:border-box
+}
+
+.card{
+  background:var(--card);
+  border-radius:10px;
+  padding:10px;
+  overflow:auto
+}
+
+.card h2{
+  margin:0 0 8px;
+  text-align:center;
+  color:var(--accent);
+}
+
+th{
+  background:#0435bf;
+}
+  /* carrossel */
+#carousel-content{min-height:120px
+}
+.fade{animation:fade .6s
+}
+@keyframes fade{from{opacity:.2}to{opacity:1}
+}
+
+</style>
