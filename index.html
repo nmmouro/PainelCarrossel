@@ -1153,7 +1153,7 @@ agendaRows.sort((a, b) => {
 });
     
 
-    
+  console.log(rows);  
 
 const socialIndex =
   TABS.findIndex(t => t.id === "social");
@@ -1182,11 +1182,7 @@ const motoristasIndex =
     
 
 const motoristasRows =
-  results[motoristasIndex].table.rows || []
-  .filter(row => {
-      const v = (row.c || []).map(getCell);
-      return v[0] !== "Motorista";
-    });
+  results[motoristasIndex].table.rows || [];
 
 const motoristaFlutuante =
   painelRows.find(row => {
