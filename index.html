@@ -988,12 +988,7 @@ function renderMotoristas(rows, painelRows, linhaFlutuante){
 
   `;
 }
-  
-console.table(
-  motoristasRows.map(r =>
-    (r.c || []).map(getCell)
-  )
-);
+
   
 /* ================= LOAD ================= */
 
@@ -1188,6 +1183,13 @@ const motoristasIndex =
 
 const motoristasRows =
   results[motoristasIndex].table.rows || [];
+
+console.table(
+  motoristasRows.map(r =>
+    (r.c || []).map(getCell)
+  )
+);
+    
 
 const motoristaFlutuante =
   painelRows.find(row => {
